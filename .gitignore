@@ -1,0 +1,14 @@
+logs/
+npm-debug.log
+yarn-error.log
+node_modules/
+coverage/
+.idea/
+*.local
+run/
+.DS_Store
+*.sw*
+*.un~
+typings/
+.nyc_output/
+data/
