@@ -1,4 +1,7 @@
 'use strict';
+
+const { nanoid } = require('nanoid');
+
 // const _ = require('lodash');
 
 const TaskStatus = {
@@ -15,10 +18,11 @@ class BaseTask {
     return this._status;
   }
   async changStatus(value) {
+    this._status = value;
     if (value !== TaskStatus.Exit) {
       await this.sendTaskInfo();
     }
-    this._status = value;
+
   }
   get taskPercentage() {
     return this._taskPercentage;
@@ -35,9 +39,12 @@ class BaseTask {
     this.startTime = null;
     this.endTime = null;
     this.error = null;
+    this._status = null;
     this.taskConfig = taskConfig;
+    this.id = taskConfig.id || nanoid();
     this.resultFile = [];
     this.resultData = {};
+    this.changStatus(TaskStatus.Pending);
     this._taskPercentage = 0;
   }
 
@@ -55,6 +62,7 @@ class BaseTask {
       status: this.status,
       result: this.resultData,
       error: this.error,
+      action: 'taskResponse',
     };
     try {
       if (this.socket) {
@@ -97,14 +105,17 @@ class BaseTask {
     return;
   }
 
-  async running() {
-    if (this.TaskStatus !== TaskStatus.Pending) {
+  async run() {
+    if (this._status !== TaskStatus.Pending) {
+      console.log('return');
       return;
     }
     this.startTime = new Date().getTime();
     await this.changStatus(TaskStatus.Running);
     try {
+      console.log('res--------11111-');
       const res = await this.execute();
+      console.log('res--------11111-', res);
       const fileData = await this.prepareFileData();
       this.endTime = new Date().getTime();
       const socketData = {
@@ -126,6 +137,7 @@ class RequestTask extends BaseTask {
   //   super(taskConfig);
   // }
   async execute() {
+    console.log(this.taskConfig, 'success');
     return { message: 'success' };
   }
 }
