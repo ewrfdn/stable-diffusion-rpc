@@ -1,13 +1,13 @@
 'use strict';
-const { sleep } = require('./utils');
-const { RequestTask } = require('./task');
+// const { sleep } = require('./utils');
+const { AiDrawTask } = require('./task');
 const { Socket } = require('./socket');
 
 class TaskManager {
   constructor() {
     this.taskQueue = [];
     this.running = false;
-    this.socket = new Socket({ host: '192.168.0.147', port: 7980 });
+    this.socket = new Socket({ host: 'localhost', port: 7980 });
     this.socket.handleMessage = data => {
       this.processMessage(data);
     };
@@ -21,8 +21,8 @@ class TaskManager {
   }
   async createTask(config = {}) {
     const { params, taskType } = config;
-    if (taskType === 'requestTask') {
-      this.taskQueue.push(new RequestTask(params, this.socket));
+    if (taskType === 'aiDrawTask') {
+      this.taskQueue.push(new AiDrawTask(params, this.socket));
       if (this.taskQueue.length === 1 && !this.running) {
         this.run();
       }

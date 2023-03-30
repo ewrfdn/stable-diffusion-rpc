@@ -21,14 +21,14 @@ const parseString = (string, res = []) => {
   return res;
 };
 
-class Server{
-  constructor(port){
+class Server {
+  constructor(port) {
     this.port = port;
     this.server = null
     this.socketMap = {}
   }
-  sendMessage(data,socket){
-    const message =JSON.stringify(data)
+  sendMessage(data, socket) {
+    const message = JSON.stringify(data)
     try {
       const b64Str = Buffer.from(message);
       console.log('len', b64Str.length);
@@ -38,40 +38,40 @@ class Server{
         const asciiChar = (len >> (8 * i)) % (1 << 8);
         lenBuffer[i] = asciiChar;
       }
-      socket.write(Buffer.concat([lenBuffer,b64Str]));
+      socket.write(Buffer.concat([lenBuffer, b64Str]));
     } catch (e) {
       console.log(e);
     }
   }
-  async handleData(data, socket){
+  async handleData(data, socket) {
     const dataObj = JSON.parse(data);
-    console.log(dataObj,"data-------")
-    this.sendMessage({id:dataObj.id, action:"replySignal"}, socket)
+    console.log(dataObj, "data-------")
+    this.sendMessage({ id: dataObj.id, action: "replySignal" }, socket)
   }
 
-  listen(){
+  listen() {
     this.server = net.createServer((socket) => {
       socket.id = nanoid()
-      this.socketMap[socket.id]={ socket }
+      this.socketMap[socket.id] = { socket }
       console.log(this.socketMap)
-      this.sendMessage({action:"createTask",data:{taskType:"requestTask",params:{taskId:"1234",it:"hello"}}},socket)
-      
+      this.sendMessage({ action: "createTask", data: { taskType: "aiDrawTask", params: { taskId: "1234", it: "hello" } } }, socket)
+
       socket.on('data', (data) => {
         const resList = parseString(data);
         for (const item of resList) {
           this.handleData(item, socket)
         }
       });
-      
+
       socket.on('close', () => {
         console.log('Client disconnected');
         delete this.socketMap[socket.id]
       });
-      socket.on("error",(err)=>{
+      socket.on("error", (err) => {
         console.log(err)
       })
     });
-    
+
     this.server.listen(this.port, () => {
       console.log('Server started');
     });
