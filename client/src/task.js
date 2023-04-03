@@ -62,11 +62,10 @@ class BaseTask {
       status: this.status,
       result: this.resultData,
       error: this.error,
-      action: 'taskResponse',
     };
     try {
       if (this.socket) {
-        await this.socket.sendMessage(sendData);
+        await this.socket.sendMessage('taskResponse', sendData);
         if (this.status === TaskStatus.Success || this.status === TaskStatus.Failed) {
           await this.changStatus(TaskStatus.Exit);
         }
@@ -143,6 +142,24 @@ class RequestTask extends BaseTask {
   }
 }
 
+class StableDiffusionRunTask extends BaseTask {
+  async runPredict(host, port, params) {
+    const { fn_index, data } = params;
+    const response = await axios(`http://${host}:${port}/run/predict/`, {
+      headers: {
+      },
+      data: {
+        fn_index,
+        data,
+        // session_hash: '7kbnt0sum9t',
+      },
+      method: 'POST',
+    });
+    return response.data;
+  }
+
+}
+
 class AiDrawTask extends BaseTask {
   async text2Image() {
     const response = await axios('http://127.0.0.1:7860/run/predict/', {
@@ -151,7 +168,7 @@ class AiDrawTask extends BaseTask {
       data: {
         fn_index: 85,
         data: [
-          'task(jugasjuviw11r4v)', // taskId
+          `task(${this.id})`, // taskId
           'masterpiece,best quality,extremely detailed CG unity 8K wallpaper,1girl,light smile,glint <lora:AnyaForger_v10:1>  pink hair\n', // 正tag
           'Lowres,Bad anatomy,Bad hands,Text,Error,multi-legged,Missing fingers,Extra digit,Fewer digits,Cropped,Worst quality,Low quality,Normal quality,Jpeg artifacts, Signature,Watermark,Username,Blurry,Missing arms,Missing legs,Bad arms,Bad legs,Bad animal ears,(mutated hands and fingers:1.5 ),(mutation, poorly drawn :1.2), (long body :1.3), (mutation, poorly drawn :1.2),(breasts:1.4), liquid body, text font ui, long neck, uncoordinated body,fused ears,huge,ugly,', // 反tag
           [],
@@ -215,4 +232,5 @@ class AiDrawTask extends BaseTask {
 module.exports = {
   RequestTask,
   AiDrawTask,
+  StableDiffusionRunTask,
 };

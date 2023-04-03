@@ -38,6 +38,10 @@ class Socket {
 
   }
 
+  async sendFirstConnectData() {
+    await this.sendMessage('firstConnected', { machineId: this.machineId });
+  }
+
   handleData(data) {
     data = JSON.parse(data.toString('utf-8'));
     if (data.action === 'replySignal') {
@@ -48,10 +52,12 @@ class Socket {
       this.handleMessage(data);
     }
   }
-  async sendMessage(data) {
+
+  async sendMessage(action, data) {
     return new Promise((resolve, reject) => {
       const sendData = {
         id: nanoid(),
+        action,
         data,
       };
       const dataString = JSON.stringify(sendData);
@@ -72,11 +78,12 @@ class Socket {
         resolve(data);
       };
     });
-
   }
+
 
   async connect() {
     return new Promise((resolve, reject) => {
+
       this.socket = net.createConnection({
         host: this.host,
         port: this.port,
@@ -84,6 +91,7 @@ class Socket {
         resolve();
         console.log('Connected to server');
       });
+
       this.socket.on('error', error => {
         reject(error);
         console.error('Connection error');

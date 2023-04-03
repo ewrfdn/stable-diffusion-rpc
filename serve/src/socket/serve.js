@@ -46,7 +46,6 @@ class Server {
   async handleData(data, socket) {
     const dataObj = JSON.parse(data);
     console.log(dataObj, "data-------")
-    this.sendMessage({ id: dataObj.id, action: "replySignal" }, socket)
   }
 
   listen() {

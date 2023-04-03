@@ -1,0 +1,53 @@
+{
+  "name": "mt-poster",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "egg": {
+    "declarations": true,
+    "framework": "minerva-api-framework"
+  },
+  "dependencies": {
+    "dayjs": "^1.10.7",
+    "egg": "^2.15.1",
+    "egg-cors": "^2.2.3",
+    "egg-scripts": "^2.11.0",
+    "lodash": "^4.17.21",
+    "minerva-api-framework": "2.1.13",
+    "nanoid": "^3.1.32"
+  },
+  "devDependencies": {
+    "autod": "^3.0.1",
+    "autod-egg": "^1.1.0",
+    "egg-bin": "^4.11.0",
+    "egg-ci": "^1.11.0",
+    "egg-mock": "^3.21.0",
+    "eslint": "^5.13.0",
+    "eslint-config-egg": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "start": "egg-scripts start --title=store-api --workers=4",
+    "startd": "egg-scripts start --daemon --title=store-api --workers=1",
+    "stop": "egg-scripts stop --title=store-api",
+    "dev": "egg-bin dev",
+    "debug": "egg-bin debug",
+    "test": "npm run lint -- --fix && npm run test-local",
+    "test-local": "egg-bin test",
+    "cov": "egg-bin cov",
+    "lint": "eslint .",
+    "ci": "npm run lint && npm run cov",
+    "autod": "autod"
+  },
+  "ci": {
+    "version": "10"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "",
+  "license": "MIT"
+}
