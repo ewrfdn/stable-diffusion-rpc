@@ -54,30 +54,31 @@ class Socket {
   }
 
   async sendMessage(action, data) {
-    return new Promise((resolve, reject) => {
-      const sendData = {
-        id: nanoid(),
-        action,
-        data,
-      };
-      const dataString = JSON.stringify(sendData);
-      try {
-        const b64Str = Buffer.from(dataString);
-        console.log('len', b64Str.length);
-        const lenBuffer = Buffer.alloc(4);
-        for (let i = 0; i < 4; i++) {
-          const len = b64Str.length;
-          const asciiChar = (len >> (8 * i)) % (1 << 8);
-          lenBuffer[i] = asciiChar;
-        }
-        this.socket.write(Buffer.concat([ lenBuffer, b64Str ]));
-      } catch (e) {
-        console.log(e);
+    // return new Promise((resolve, reject) => {
+    const sendData = {
+      id: nanoid(),
+      action,
+      data,
+    };
+    const dataString = JSON.stringify(sendData);
+    console.log('sendMessage', dataString);
+    try {
+      const b64Str = Buffer.from(dataString);
+      console.log('len', b64Str.length);
+      const lenBuffer = Buffer.alloc(4);
+      for (let i = 0; i < 4; i++) {
+        const len = b64Str.length;
+        const asciiChar = (len >> (8 * i)) % (1 << 8);
+        lenBuffer[i] = asciiChar;
       }
-      this.sendMessageHandleMap[sendData.id] = data => {
-        resolve(data);
-      };
-    });
+      this.socket.write(Buffer.concat([ lenBuffer, b64Str ]));
+    } catch (e) {
+      console.log(e);
+    }
+    // this.sendMessageHandleMap[sendData.id] = data => {
+    //   resolve(data);
+    // };
+    // });
   }
 
 
@@ -87,9 +88,10 @@ class Socket {
       this.socket = net.createConnection({
         host: this.host,
         port: this.port,
-      }, function() {
+      }, () => {
         resolve();
         console.log('Connected to server');
+        this.sendFirstConnectData();
       });
 
       this.socket.on('error', error => {

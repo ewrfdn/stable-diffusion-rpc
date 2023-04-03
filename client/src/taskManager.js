@@ -14,22 +14,27 @@ class TaskManager {
     this.socket.connect();
   }
   async processMessage(data) {
-    if (data.action === 'createTask') {
-      console.log('processMessage', data);
-      this.createTask(data.data);
+    try {
+      if (data.action === 'createTask') {
+        this.createTask(data.data);
+      }
+    } catch (e) {
+      console.log(e);
     }
+
   }
   async createTask(config = {}) {
     const { params, taskType } = config;
-    if (taskType === 'aiDrawTask') {
+    if (taskType === 'AiDrawTask') {
       this.taskQueue.push(new AiDrawTask(params, this.socket));
       if (this.taskQueue.length === 1 && !this.running) {
         this.run();
       }
+    } else {
+      throw new Error('task Type does not exist');
     }
   }
   async run() {
-    console.log('run', this.taskQueue.length);
     this.running = true;
     while (this.taskQueue.length > 0) {
       await this.taskQueue[0].run();

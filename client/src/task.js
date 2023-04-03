@@ -34,6 +34,7 @@ class BaseTask {
 
 
   constructor(taskConfig, socket) {
+    console.log('taskConfig', taskConfig);
     this.socket = socket;
     this.createdDate = new Date().getDate();
     this.startTime = null;
@@ -41,7 +42,7 @@ class BaseTask {
     this.error = null;
     this._status = null;
     this.taskConfig = taskConfig;
-    this.id = taskConfig.id || nanoid();
+    this.id = taskConfig.taskId || nanoid();
     this.resultFile = [];
     this.resultData = {};
     this.changStatus(TaskStatus.Pending);

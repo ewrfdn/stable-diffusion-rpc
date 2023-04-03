@@ -1,6 +1,6 @@
 'use strict';
 const path = require('path');
-const { Server } = require('./socket/serve');
+const { Server } = require('./app/socket/serve');
 
 class AppBootHook {
   constructor(app) {

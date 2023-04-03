@@ -3,19 +3,9 @@
 const { nanoid } = require('nanoid');
 
 const net = require('net');
+const { TaskManager } = require('./taskManage');
+const { TaskResponseStatus, TaskStatus, SocketStatus } = require('./contrast');
 
-const TaskStatus = {
-  ENQUEUE: 'enqueue',
-  POST: 'post',
-  SUCCESS: 'success',
-  FAILED: 'failed',
-};
-
-const SocketStatus = {
-  AVAILABLE: 'available',
-  ALLOCATE: 'allocate',
-  USED: 'used',
-};
 
 const parseString = (string, res = []) => {
   if (string.length < 4) {
@@ -40,9 +30,11 @@ class Server {
     this.port = port;
     this.server = null;
     this.socketMap = {};
-    this.taskQueue = [];
-    this.taskPayloadMap = {};
+    this.taskChangedCallbackMap = {};
+    this.taskFinishedCallbackMap = {};
     this.isRunning = false;
+    this.isPosting = false;
+    this.taskManager = new TaskManager();
 
   }
   sendMessage(data, socket) {
@@ -64,9 +56,35 @@ class Server {
 
   // eslint-disable-next-line no-unused-vars
   async handleData(data, socket) {
-
     const dataObj = JSON.parse(data);
-    if (dataObj) { console.log(dataObj); }
+    if (dataObj) {
+      const { data, action } = dataObj;
+      if (action === 'firstConnected') {
+        this.socketMap[socket.id] = { id: socket.id, socket, socketStatus: SocketStatus.AVAILABLE, machineId: data.machineId };
+      } else if (action === 'taskResponse') {
+        const taskId = data.id;
+        const callback = this.taskChangedCallbackMap[taskId];
+        console.log(taskId, callback, this.taskChangedCallbackMap);
+        if (callback) {
+          callback(data);
+        }
+        if (data.status === TaskResponseStatus.Success || data.status === TaskResponseStatus.Failed) {
+          const callback = this.taskFinishedCallbackMap[taskId];
+          try {
+            if (callback) {
+              const taskData = this.taskManager.getTask(taskId);
+              callback(data, taskData);
+              delete this.taskFinishedCallbackMap[taskId];
+            }
+            delete this.taskChangedCallbackMap[taskId];
+          } catch (e) {
+            console.log(e);
+          }
+          this.taskManager.finishTask(taskId);
+          this.releaseClient(socket);
+        }
+      }
+    }
   }
 
   listen() {
@@ -74,7 +92,6 @@ class Server {
       socket.id = nanoid();
       socket.on('data', data => {
         const resList = parseString(data);
-
         for (const item of resList) {
           this.handleData(item, socket);
         }
@@ -95,51 +112,60 @@ class Server {
   }
 
   async createTask(taskType, payload) {
-    const taskId = nanoid();
-    this.taskPayloadMap[taskId] = { action: 'createTask', data: { taskType, params: { payload, taskId } } };
-    return taskId;
+    return this.taskManager.createTask(taskType, payload);
   }
 
-  async postTask(taskId) {
-    const taskData = this.taskPayloadMap[taskId];
-    if (!taskData) {
-      throw new Error(`taskId: ${taskId} does not Exist `);
-    }
-    const queueData = { id: taskId, payload: taskData, status: TaskStatus.ENQUEUE, enqueueTime: new Date().getTime() };
-    // if(){
-
-    // }
-    this.taskQueue.push(queueData);
+  async pushTask(taskId) {
+    this.taskManager.pushTask(taskId);
     this.postQueue();
   }
 
-  async allocClient() {
-    for (const key of this.socketMap) {
-      const socket = this.socketMap[key];
-      if (socket.socketStatus === SocketStatus.AVAILABLE) {
-        socket.socketStatus = SocketStatus.ALLOCATE;
-        return socket;
+  allocClient() {
+    try {
+      for (const key in this.socketMap) {
+        const socket = this.socketMap[key];
+        if (socket.socketStatus === SocketStatus.AVAILABLE) {
+          socket.socketStatus = SocketStatus.ALLOCATE;
+          return socket;
+        }
       }
+    } catch (e) {
+      console.log(e);
     }
+
     return null;
   }
 
+  async releaseClient(socket) {
+    const client = this.socketMap[socket.id];
+    client.socketStatus = SocketStatus.AVAILABLE;
+  }
+
   async postQueue() {
+    if (this.isPosting) {
+      return;
+    }
     let client = this.allocClient();
-    while (client && this.taskQueue.length > 0) {
-      const queueData = this.taskQueue[0];
+    while (client && this.taskManager.getPaddingTaskCount() > 0) {
+      this.isPosting = true;
+      const queueData = this.taskManager.topTask();
       const { payload } = queueData;
       queueData.postTime = new Date().getTime();
       try {
-        await this.sendMessage(payload);
+        await this.sendMessage(payload, client.socket);
         queueData.status = TaskStatus.POST;
+        queueData.socketId = client.id;
+        this.taskManager.shiftTask();
         client.socketStatus = SocketStatus.USED;
-        this.taskQueue.shift();
       } catch (e) {
         console.log(e);
       }
       client = this.allocClient();
     }
+    if (client.socketStatus === SocketStatus.ALLOCATE) {
+      client.socketStatus = SocketStatus.AVAILABLE;
+    }
+    this.isPosting = false;
   }
 
   listenTaskQueue() {
@@ -148,11 +174,11 @@ class Server {
 
 
   onTaskStatusChange(taskId, callBack) {
-
+    this.taskChangedCallbackMap[taskId] = callBack;
   }
 
   onTaskEnd(taskId, callBack) {
-
+    this.taskFinishedCallbackMap[taskId] = callBack;
   }
 
 }
