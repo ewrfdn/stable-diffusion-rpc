@@ -35,11 +35,41 @@ class TaskManager {
     return this.taskQueue[0];
   }
 
-  shiftTask() {
-    const task = this.taskQueue.shift();
-    task.status = TaskStatus.POST;
-    this.taskRunningQueue.push(task);
-    return task;
+  shiftTask(id) {
+    let task = null;
+    if (!id) {
+      task = this.taskQueue.shift();
+    } else {
+      const index = this.taskQueue.findIndex(i => i.id === id);
+      if (index !== -1) {
+        const res = this.taskQueue.splice(index, 1);
+        task = res[0];
+      }
+    }
+    if (task) {
+      task.status = TaskStatus.POST;
+      this.taskRunningQueue.push(task);
+      return task;
+    }
+
+  }
+
+  unshiftTask(id) {
+    let task = null;
+    if (!id) {
+      task = this.taskRunningQueue.pop();
+    } else {
+      const index = this.taskRunningQueue.findIndex(i => i.id === id);
+      if (index !== -1) {
+        const res = this.taskRunningQueue.splice(index, 1);
+        task = res[0];
+      }
+    }
+    if (task) {
+      task.status = TaskStatus.ENQUEUE;
+      this.taskQueue.unshift(task);
+      return task;
+    }
   }
 
   getTask(taskId) {
