@@ -4,7 +4,8 @@ const { Controller } = require('minerva-api-framework');
 class StableDiffusion extends Controller {
   async draw() {
     const { ctx } = this;
-    const body = await ctx.service.stableDiffusion.draw();
+    const params = ctx.restful.params;
+    const body = await ctx.service.stableDiffusion.draw(params);
     ctx.body = body;
     ctx.status = 200;
   }

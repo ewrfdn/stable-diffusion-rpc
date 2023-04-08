@@ -3,9 +3,9 @@
 const { Service } = require('minerva-api-framework');
 
 class StableDiffusionService extends Service {
-  async draw() {
+  async draw(params) {
     const { ctx, app } = this;
-    const taskId = await app.stableDiffusionServe.createTask('AiDrawTask', { port: 8046, host: '127.0.0.1', data: '123' });
+    const taskId = await app.stableDiffusionServe.createTask('AiDrawTask', { port: 7860, host: '127.0.0.1', data: params });
     return new Promise((resolve, reject) => {
       app.stableDiffusionServe.onTaskStatusChange(taskId, data => {
         console.log(data);
