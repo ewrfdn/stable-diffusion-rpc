@@ -5,5 +5,5 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-  router.post('/stable-diffusion/draw', controller.stableDiffusion.draw);
+  router.post('/v1/stable-diffusion/text-to-image', controller.stableDiffusion.draw);
 };

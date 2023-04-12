@@ -33,7 +33,6 @@ class BaseTask {
 
 
   constructor(taskConfig, socket) {
-    console.log('taskConfig', taskConfig);
     this.socket = socket;
     this.createdDate = new Date().getDate();
     this.startTime = null;
@@ -125,9 +124,7 @@ class BaseTask {
     this.startTime = new Date().getTime();
     await this.changStatus(TaskStatus.Running);
     try {
-      console.log('res--------11111-');
       const res = await this.execute();
-      console.log('res--------11111-', res);
       const fileData = await this.prepareFileData();
       this.endTime = new Date().getTime();
       const socketData = {
@@ -150,7 +147,6 @@ class RequestTask extends BaseTask {
   // }
 
   async execute() {
-    console.log(this.taskConfig, 'success');
     return { message: 'success' };
   }
 }
@@ -175,8 +171,9 @@ class StableDiffusionRunTask extends BaseTask {
     try {
       const fileName = path.basename(filepath);
       const mimtype = mime.getType(filepath);
-      const response = await axios(`http://${host}:${port}/file=${filepath}`);
-
+      const response = await axios.get(`http://${host}:${port}/file=${filepath}`,
+        { responseType: 'arraybuffer' }
+      );
       const buffer = response.data;
       this.resultFile.push({ fileKey: filepath, mimtype, fileName, buffer });
     } catch (e) {
@@ -287,7 +284,6 @@ class AiDrawTask extends StableDiffusionRunTask {
   async execute() {
     const { port, host, data } = this.params;
     const { params, checkPoint } = data;
-    console.log('params', params, this.params);
     if (checkPoint) {
       await this.loadCheckPoint(host, port, checkPoint);
     }

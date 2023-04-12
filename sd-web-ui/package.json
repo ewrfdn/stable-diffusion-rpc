@@ -1,0 +1,25 @@
+{
+  "name": "interview",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ant-design-vue": "^3.2.12",
+    "dayjs": "^1.11.5",
+    "lodash": "^4.17.21",
+    "nanoid": "^4.0.0",
+    "v-viewer": "^3.0.11",
+    "vue": "^3.2.37",
+    "vue-router": "^4.1.6",
+    "vuex": "^4.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^3.1.0",
+    "vite": "^3.1.0"
+  }
+}
