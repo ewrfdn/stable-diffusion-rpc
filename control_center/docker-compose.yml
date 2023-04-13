@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  sd_control_center:
+    image: sd/control_center:dev
+    container_name: sd_control_center
+    ports:
+      - "31106:31106"
+      - "17860:17860"
+    network_mode: "bridge"
+    privileged: false
+    restart: always
+    # environment:
+    #   PORT: "6274"
+    #   DOCUMENT_RECOGNITION_ENDPOINT: "http://192.168.0.147:6273"
+    #   TOKEN_MT_SECRET_ENDPOINT: "http://192.168.0.147:5100/secret"
+    # volumes:
+    #   - localPath:dockerPath

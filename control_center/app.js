@@ -5,7 +5,7 @@ const { Server } = require('./app/socket/serve');
 class AppBootHook {
   constructor(app) {
     this.app = app;
-    this.app.stableDiffusionServe = new Server(17980);
+    this.app.stableDiffusionServe = new Server(17860);
     this.app.stableDiffusionServe.listen();
     const utilPaths = app.loader.getLoadUnits().map(unit => path.join(unit.path, 'app/utils'));
     this.app.loader.loadToContext(

@@ -11,11 +11,6 @@ module.exports = appInfo => {
    * @type {Egg.EggAppConfig}
    **/
   const config = {};
-  config.cluster = {
-    listen: {
-      port: 31106,
-    },
-  };
 
   return {
     ...config,

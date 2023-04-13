@@ -15,9 +15,11 @@ module.exports = appInfo => {
 
   config.cluster = {
     listen: {
-      port: 6591,
+      port: 31106,
     },
   };
+  config.SOCKET_PORT = 7860;
+
   config.fluentLogger = {
     disableFile: false,
   };
@@ -31,7 +33,6 @@ module.exports = appInfo => {
     },
     domainWhiteList: [ '*' ],
   };
-
   config.dataDir = {
     rootDir: './data',
   };
@@ -44,6 +45,7 @@ module.exports = appInfo => {
   const userConfig = {
     // myAppName: 'egg',
   };
+
   return {
     ...config,
     ...userConfig,

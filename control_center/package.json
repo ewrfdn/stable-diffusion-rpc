@@ -1,5 +1,5 @@
 {
-  "name": "mt-poster",
+  "name": "sd-control-center",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -29,8 +29,8 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --title=store-api --workers=4",
-    "startd": "egg-scripts start --daemon --title=store-api --workers=1",
+    "start": "egg-scripts start --title=control-center --workers=1",
+    "startd": "egg-scripts start --daemon --title=control-center --workers=1",
     "stop": "egg-scripts stop --title=store-api",
     "dev": "egg-bin dev",
     "debug": "egg-bin debug",

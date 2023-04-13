@@ -15,7 +15,7 @@
       
     </div>
     <div class="footer">
-        <a-button class="generate-button" @click="generate">生成</a-button>
+        <a-button class="generate-button" @click="generate" :loading="loading">生成</a-button>
       </div>
     </div>
     
@@ -30,6 +30,7 @@ import { reactive, ref } from 'vue';
 import ParamsCard from '../components/ParamsCard.vue';
 import stableDiffusionService from "../api/stableDiffusion"
 import ImageView from '../components/ImageView.vue';
+import { message } from 'ant-design-vue';
 const params = reactive({
   checkPoint: "chilloutmix_NiPrunedFp32Fix.safetensors [fc2511737a]",
   params: {
@@ -43,17 +44,25 @@ const params = reactive({
   }
   
 })
+const loading = ref(false)
+
 const images = ref([])
 const generate = async () => {
-  console.log(params)
-  const res = await stableDiffusionService.text2Image(params)
+  loading.value = true
+  try {
+    const res = await stableDiffusionService.text2Image(params)
   const files = res.files;
   images.value = files.map(i => {
     return {
       url:"data:image/png;base64,"+i.b64File
     }
   })
-  console.log( images.value)
+  } catch (e) {
+    message.error(e.toString())
+    console.log(e)
+  }
+  loading.value=false
+  
 }
 </script>
 

@@ -7,7 +7,9 @@ const ContentType = {
   formData: 'multipart/form-data'
 }
 
-const baseURL = "http://localhost:31106/v1/"
+// const baseURL = "http://localhost:31106/v1/"
+const baseURL = "http://123.60.53.33:31106/v1/"
+
 const axiosInstance = axios.create({
   baseURL,
   timeout: 60000,
