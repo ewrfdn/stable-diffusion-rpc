@@ -2,18 +2,19 @@
 const { Controller } = require('minerva-api-framework');
 
 class StableDiffusion extends Controller {
-  async draw() {
+  async getClientInfo() {
     const { ctx } = this;
     const params = ctx.restful.params;
-    const body = await ctx.service.stableDiffusion.draw(params);
-    ctx.body = body;
+    const body = await ctx.service.taskManager.getAllClient(params);
+    ctx.body = { list: body };
     ctx.status = 200;
   }
-  async getCheckpoints() {
+
+  async getAllTaskInfo() {
     const { ctx } = this;
     const params = ctx.restful.params;
-    const body = await ctx.service.stableDiffusion.getCheckpoints(params);
-    ctx.body = body;
+    const body = await ctx.service.taskManager.getAllTasks(params);
+    ctx.body = { list: body };
     ctx.status = 200;
   }
 }

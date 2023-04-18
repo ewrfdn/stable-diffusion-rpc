@@ -32,7 +32,7 @@ import stableDiffusionService from "../api/stableDiffusion"
 import ImageView from '../components/ImageView.vue';
 import { message } from 'ant-design-vue';
 const params = reactive({
-  checkPoint: "chilloutmix_NiPrunedFp32Fix.safetensors [fc2511737a]",
+  checkPoint: "chilloutmix",
   params: {
     width: 512,
     hight: 512,

@@ -5,49 +5,7 @@ const { nanoid } = require('nanoid');
 const net = require('net');
 const { TaskManager } = require('./taskManage');
 const { TaskResponseStatus, TaskStatus, SocketStatus } = require('./contrast');
-
-let tempBuffer = null;
-let bufferLength = 0;
-
-const parseString = (buffer, res = []) => {
-  if (buffer.length < 4) {
-    return res;
-  }
-  let content = null;
-  let lenData = null;
-  let len = 0;
-  if (bufferLength === 0) {
-    lenData = buffer.slice(0, 4);
-    content = buffer.slice(4);
-    for (let i = 0; i < lenData.length; i++) {
-      console.log(lenData[i]);
-      len += lenData[i] << 8 * i;
-    }
-    if (len > content.length) {
-      bufferLength = len;
-      tempBuffer = content;
-    } else {
-      let text = content.slice(0, len);
-      text = text.toString();
-      res.push(text);
-    }
-
-  } else {
-    content = buffer;
-    len = bufferLength - tempBuffer.length;
-    const text = content.slice(0, len);
-    tempBuffer = Buffer.concat([ tempBuffer, text ]);
-    if (len <= content.length) {
-      const str = tempBuffer.toString();
-      res.push(str);
-      tempBuffer = null;
-      bufferLength = 0;
-    }
-
-  }
-  parseString(content.slice(len), res);
-  return res;
-};
+const { parseString } = require('./utils');
 
 class Server {
   constructor(port) {
@@ -65,7 +23,6 @@ class Server {
     const message = JSON.stringify(data);
     try {
       const b64Str = Buffer.from(message);
-      console.log('len', b64Str.length);
       const lenBuffer = Buffer.alloc(4);
       for (let i = 0; i < 4; i++) {
         const len = b64Str.length;
@@ -89,7 +46,6 @@ class Server {
       } else if (action === 'taskResponse') {
         const taskId = data.id;
         const callback = this.taskChangedCallbackMap[taskId];
-        console.log(taskId, callback, this.taskChangedCallbackMap);
         if (callback) {
           callback(data);
         }
@@ -117,7 +73,6 @@ class Server {
     this.server = net.createServer(socket => {
       socket.id = nanoid();
       socket.on('data', data => {
-        console.log('length', data.length);
         const resList = parseString(data);
         for (const item of resList) {
           this.handleData(item, socket);
@@ -167,6 +122,21 @@ class Server {
     return null;
   }
 
+  releaseAllocedClient() {
+    try {
+      for (const key in this.socketMap) {
+        const socket = this.socketMap[key];
+        console.log(socket.socketStatus);
+        if (socket.socketStatus === SocketStatus.ALLOCATE) {
+          console.log('release---------------releaseAllocedClient ', socket.socketStatus);
+          socket.socketStatus = SocketStatus.AVAILABLE;
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   async releaseClient(socket, taskId) {
     const client = this.socketMap[socket.id];
     delete client.taskMap[taskId];
@@ -178,14 +148,14 @@ class Server {
       return;
     }
     let client = this.allocClient();
-    const taskCount = this.taskManager.getPaddingTaskCount();
+    let taskCount = this.taskManager.getPaddingTaskCount();
     while (client && taskCount > 0) {
       this.isPosting = true;
       const task = this.taskManager.topTask();
       const { payload } = task;
       task.postTime = new Date().getTime();
       try {
-        await this.sendMessage(payload, client.socket);
+        this.sendMessage(payload, client.socket);
         task.status = TaskStatus.POST;
         task.socketId = client.id;
         this.taskManager.shiftTask();
@@ -195,15 +165,12 @@ class Server {
         console.log(e);
       }
       client = this.allocClient();
-    }
-    try {
-      if (client && client.socketStatus === SocketStatus.ALLOCATE) {
-        client.socketStatus = SocketStatus.AVAILABLE;
-      }
-    } catch (e) {
-      console.log(e);
+      taskCount = this.taskManager.getPaddingTaskCount();
+
     }
     this.isPosting = false;
+    this.releaseAllocedClient();
+    console.log('posting-success', this.isPosting);
   }
 
   listenTaskQueue() {
@@ -217,6 +184,15 @@ class Server {
 
   onTaskEnd(taskId, callBack) {
     this.taskFinishedCallbackMap[taskId] = callBack;
+  }
+
+  getAllClient(params) {
+    const res = [];
+    for (const key in this.socketMap) {
+      const { socketStatus, machineId, id } = this.socketMap[key];
+      res.push({ id, machineId, socketStatus });
+    }
+    return res;
   }
 
 }

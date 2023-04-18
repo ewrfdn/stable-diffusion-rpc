@@ -257,6 +257,15 @@ class StableDiffusionRunTask extends BaseTask {
     return response.data[0].choices;
   }
 
+  async getCheckPoint(host, port, name) {
+    const checkPoints = await this.getCheckPointList(host, port);
+    for (const checkPoint of checkPoints) {
+      if (checkPoint.includes(name)) {
+        return checkPoint;
+      }
+    }
+  }
+
   async loadCheckPoint(host, port, checkpointName) {
     const data = {
       fn_index: 229,
@@ -285,7 +294,8 @@ class AiDrawTask extends StableDiffusionRunTask {
     const { port, host, data } = this.params;
     const { params, checkPoint } = data;
     if (checkPoint) {
-      await this.loadCheckPoint(host, port, checkPoint);
+      const checkpointName = await this.getCheckPoint(host, port, checkPoint);
+      await this.loadCheckPoint(host, port, checkpointName);
     }
     const res = await this.text2Image(host, port, params);
     const fileList = [];

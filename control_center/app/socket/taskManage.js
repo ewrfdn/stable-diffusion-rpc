@@ -82,6 +82,15 @@ class TaskManager {
       return this.taskRunningQueue[index];
     }
   }
+  getAllTasks() {
+    return [ ...this.taskRunningQueue, ...this.taskQueue ];
+  }
+  getPaddingTasks() {
+    return this.taskQueue;
+  }
+  getRunningTasks() {
+    return this.taskRunningQueue;
+  }
 
   finishTask(taskId) {
     const index = this.taskRunningQueue.findIndex(i => i.id === taskId);
