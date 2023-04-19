@@ -2,12 +2,12 @@
 // const { sleep } = require('./utils');
 const { AiDrawTask } = require('./task');
 const { Socket } = require('./socket');
-
+const config = require('./config/config');
 class TaskManager {
   constructor() {
     this.taskQueue = [];
     this.running = false;
-    this.socket = new Socket({ host: '123.60.53.33', port: 17860 });
+    this.socket = new Socket({ host: config.host || 'localhost', port: config.port || 17860 });
     // this.socket = new Socket({ host: 'localhost', port: 17860 });
 
     this.socket.handleMessage = data => {

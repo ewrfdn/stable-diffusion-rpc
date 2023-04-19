@@ -3,6 +3,7 @@
 const net = require('net');
 const { nanoid } = require('nanoid');
 const { machineIdSync } = require('node-machine-id');
+const { getGpuStatus } = require('./utils/gpu');
 
 let tempBuffer = null;
 let bufferLength = 0;
@@ -52,6 +53,7 @@ class Socket {
     this.host = host;
     this.port = port;
     this.socket = null;
+    this.heartbeat = null;
     this.priority = priority || 1;
     this.id = nanoid();
     this.machineId = machineIdSync();
@@ -64,8 +66,9 @@ class Socket {
 
   }
 
-  async sendFirstConnectData() {
-    await this.sendMessage('firstConnected', { machineId: this.machineId });
+  async sendHeartbeat() {
+    const gpu = await getGpuStatus();
+    await this.sendMessage('heartbeat', { machineId: this.machineId, gpu });
   }
 
   handleData(data) {
@@ -114,10 +117,16 @@ class Socket {
       this.socket = net.createConnection({
         host: this.host,
         port: this.port,
-      }, () => {
+      }, async () => {
         resolve();
         console.log('Connected to server');
-        this.sendFirstConnectData();
+        this.sendHeartbeat();
+        if (this.heartbeat) {
+          clearInterval(this.heartbeat);
+        }
+        this.heartbeat = setInterval(() => {
+          this.sendHeartbeat();
+        }, 15 * 1000);
       });
 
       this.socket.on('error', error => {
@@ -132,9 +141,16 @@ class Socket {
           this.handleData(item);
         }
       });
+      this.socket.on('close', async () => {
+        this.socket = null;
+        await this.connect();
+      });
 
-      this.socket.on('end', function() {
+      this.socket.on('end', async () => {
+        this.socket = null;
+        await this.connect();
         console.log('Server disconnected');
+        this.connect();
       });
 
     });

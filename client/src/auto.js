@@ -1,10 +1,11 @@
 'use strict';
-const process = require('child_process');
-const childProcess = process.fork('./src/index.js');
-const { sleep } = require('./utils');
 
-childProcess.on('exit', async function(code) {
+const { fork } = require('child_process');
+const argv = process.argv.slice(2);
+const childProcess = fork('./src/index.js', argv);
+
+childProcess.on('exit', function(code) {
   console.log('process exits + ' + code);
-  await sleep(3000);
-  process.fork('./src/auto.js');
+  fork('./src/auto.js', argv);
 });
+

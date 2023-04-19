@@ -40,8 +40,13 @@ class Server {
     const dataObj = JSON.parse(data);
     if (dataObj) {
       const { data, action } = dataObj;
-      if (action === 'firstConnected') {
-        this.socketMap[socket.id] = { id: socket.id, taskMap: {}, socket, socketStatus: SocketStatus.AVAILABLE, machineId: data.machineId };
+      console.log(action);
+      if (action === 'heartbeat') {
+        if (this.socketMap[socket.id]) {
+          this.socketMap[socket.id].gpu = data.gpu;
+        } else {
+          this.socketMap[socket.id] = { id: socket.id, taskMap: {}, socket, socketStatus: SocketStatus.AVAILABLE, machineId: data.machineId, gpu: data.gpu };
+        }
         this.postQueue();
       } else if (action === 'taskResponse') {
         const taskId = data.id;
@@ -189,8 +194,8 @@ class Server {
   getAllClient(params) {
     const res = [];
     for (const key in this.socketMap) {
-      const { socketStatus, machineId, id } = this.socketMap[key];
-      res.push({ id, machineId, socketStatus });
+      const { socketStatus, machineId, id, gpu } = this.socketMap[key];
+      res.push({ id, machineId, socketStatus, gpu });
     }
     return res;
   }
