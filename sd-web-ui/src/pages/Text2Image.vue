@@ -3,7 +3,10 @@
     <div class="config-panel">
       <div class="params">
         <ParamsCard>
-          <template v-slot:header>描述</template>
+          <template v-slot:header><span>
+              <span>描述</span> <a-button size="small" @click="randomPrompt" class="random-button">随机生成</a-button>
+            </span>
+          </template>
           <template v-slot:content>
             <a-textarea v-model:value="params.params.prompt" :autosize="{ minRows: 4, maxRows: 6 }"></a-textarea>
           </template>
@@ -17,6 +20,33 @@
           <template v-slot:content>
             <ratioView v-model:value="size"></ratioView>
           </template>
+        </ParamsCard>
+        <ParamsCard>
+          <template v-slot:header>高级设置</template>
+          <template v-slot:content>
+            <a-row>
+              <a-col :span="12" style="padding-right: 24px;">
+                <div class="title">随机程度(越高随机度越大)</div>
+                <a-slider style="width: 100%;" v-model:value="params.params.cgfScale" :min="1" :max="20" :step="0.5" />
+                <div class="title">采样方法</div>
+                <a-select id="test" style="width: 100%;" size="small" v-model:value="params.params.samplingMethod"
+                  :options="samplingMethodOption" />
+              </a-col>
+              <a-col :span="12" style="padding-right: 24px;">
+                <div class="title">采样步数</div>
+                <a-slider v-model:value="params.params.sampling" :min="1" :max="50" :step="1" />
+                <div class="title">种子</div>
+                <a-input-number style="width: 100%;" size="small" v-model:value="params.params.seed" :min="-1"
+                  :step="1" />
+              </a-col>
+            </a-row>
+          </template>
+          <!-- <template v-slot:more>
+            <a-row>
+              <a-col span="12"></a-col>
+              <a-col span="12"></a-col>
+            </a-row>
+          </template> -->
         </ParamsCard>
 
       </div>
@@ -38,6 +68,7 @@ import stableDiffusionService from "../api/stableDiffusion"
 import ImageView from '../components/ImageView.vue';
 import ratioView from '../components/ratioView.vue';
 import { message } from 'ant-design-vue';
+import { generatePromopt } from "../prompt/promptGenerator"
 const params = reactive({
   checkPoint: "chilloutmix",
   params: {
@@ -48,18 +79,108 @@ const params = reactive({
     sampling: 30,
     samplingMethod: "Euler a",
     restoreFace: false,
+    cgfScale: 7,
+    seed: -1
   }
 
 })
+
 const size = ref({
   width: 512,
   height: 512
 })
 const loading = ref(false)
 
-const images = ref([])
+const randomPrompt = () => {
+  const prompt = generatePromopt()
+  params.params.prompt = prompt
+}
+const samplingMethodOption = ref([
+
+  {
+    title: "Euler a",
+    value: "Euler a"
+  },
+  {
+    title: "Euler",
+    value: "Euler"
+  },
+  {
+    title: "LMS",
+    value: "LMS"
+  },
+  {
+    title: "Henu",
+    value: "Henu"
+  },
+  {
+    title: "DPM2",
+    value: "DPM2"
+  },
+  {
+    title: "DPM2 a",
+    value: "DPM2 a"
+  },
+  {
+    title: "DPM++ 2S a",
+    value: "DPM++ 2S a"
+  },
+  {
+    title: "DPM++ SDE",
+    value: "DPM++ SDE"
+  },
+  {
+    title: "DPM2 Karras",
+    value: "DPM2 Karras"
+  },
+  {
+    title: "DPM2 a Karras",
+    value: "DPM2 a Karras"
+  },
+  {
+    title: "DPM++ 2s a Karras",
+    value: "DPM++ 2S a Karras"
+  },
+  {
+    title: "DPM++ 2M Karras",
+    value: "DPM++ 2M  Karras"
+  },
+  {
+    title: "DPM++ SDE Karras",
+    value: "DPM++ SDE  Karras"
+  },
+  {
+    title: "DPM fast",
+    value: "DPM fast"
+  },
+  {
+    title: "DPM adaptive",
+    value: "DPM adaptive"
+  },
+  {
+    title: "LMS Karras",
+    value: "LMS Karras"
+  },
+  {
+    title: "DDIM",
+    value: "DDIM"
+  },
+  {
+    title: "PLMS",
+    value: "PLMS"
+  }
+
+])
+
+const images = ref([
+  {
+    url: "https://th.bing.com/th/id/R.987f582c510be58755c4933cda68d525?rik=C0D21hJDYvXosw&riu=http%3a%2f%2fimg.pconline.com.cn%2fimages%2fupload%2fupc%2ftx%2fwallpaper%2f1305%2f16%2fc4%2f20990657_1368686545122.jpg&ehk=netN2qzcCVS4ALUQfDOwxAwFcy41oxC%2b0xTFvOYy5ds%3d&risl=&pid=ImgRaw&r=0"
+
+  }
+])
 const generate = async () => {
   loading.value = true
+  images.value = []
   try {
     const data = { ...toRaw(params) }
     data.params = { ...toRaw(data.params), ...toRaw(size.value) }
@@ -105,6 +226,12 @@ const generate = async () => {
   width: 45%;
   height: 100%;
   background: #fff;
+}
+
+.random-button {
+  font-size: 12px !important;
+  border-radius: 12px;
+  margin-left: 12px;
 }
 
 .params {

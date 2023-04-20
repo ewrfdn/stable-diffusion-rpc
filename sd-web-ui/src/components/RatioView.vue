@@ -46,12 +46,13 @@ const ratioList = ref([
     ratio: [3, 4],
     id: 3,
     baseSize: 1200,
-  }
+  },
+
 ])
 const selectedItem = ref(ratioList.value[0])
 const handleRateChange = () => {
-  let width = selectedItem.value.baseSize / Math.min(...selectedItem.value.ratio) * rateSize.value / 100 * selectedItem.value.ratio[0]
-  let height = selectedItem.value.baseSize / Math.min(...selectedItem.value.ratio) * rateSize.value / 100 * selectedItem.value.ratio[1]
+  let width = parseInt(selectedItem.value.baseSize / Math.min(...selectedItem.value.ratio) * rateSize.value / 100 * selectedItem.value.ratio[0])
+  let height = parseInt(selectedItem.value.baseSize / Math.min(...selectedItem.value.ratio) * rateSize.value / 100 * selectedItem.value.ratio[1])
 
   emits("update:value", { width, height })
 }
