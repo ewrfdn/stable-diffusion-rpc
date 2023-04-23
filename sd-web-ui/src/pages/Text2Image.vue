@@ -68,7 +68,7 @@ import stableDiffusionService from "../api/stableDiffusion"
 import ImageView from '../components/ImageView.vue';
 import ratioView from '../components/ratioView.vue';
 import { message } from 'ant-design-vue';
-import { generatePromopt } from "../prompt/promptGenerator"
+import { generatePromopt, preProcessText2ImageParams } from "../prompt/promptGenerator"
 const params = reactive({
   checkPoint: "chilloutmix",
   params: {
@@ -184,9 +184,13 @@ const generate = async () => {
   try {
     const data = { ...toRaw(params) }
     data.params = { ...toRaw(data.params), ...toRaw(size.value) }
-    console.log(size.value)
-    console.log(data)
-    const res = await stableDiffusionService.text2Image(data)
+    const worker = await stableDiffusionService.getAllWorker()
+    if (!worker || worker.list.length === 0) {
+      throw new Error("worker 已经全部离线，请等待worker 上线后再提交任务")
+    }
+    const task = await stableDiffusionService.getAllTask()
+    message.success("当前任务前共有" + task.list.length + "个" + "任务")
+    const res = await stableDiffusionService.text2Image(preProcessText2ImageParams(data))
     const files = res.files;
     images.value = files.map(i => {
       return {

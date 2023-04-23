@@ -12,7 +12,7 @@ const baseURL = "http://123.60.53.33:31106/v1/"
 
 const axiosInstance = axios.create({
   baseURL,
-  timeout: 60000,
+  timeout: 3600 * 1000,
   responseType: 'json',
   headers: {
     'X-Requested-With': 'XMLHttpRequest'

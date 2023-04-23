@@ -4,7 +4,7 @@
       :selected="item.id == selectedItem.id" @click="handleClick(item)"></RatioCard>
   </div>
   <span style="font-size: 12px;">大小</span>
-  <a-slider id="test" v-model:value="rateSize" :min="30" :max="100" :step="1" @change="handleRateChange" />
+  <a-slider id="test" v-model:value="rateSize" :min="20" :max="100" :step="1" @change="handleRateChange" />
 </template>
 
 <script setup>
@@ -35,17 +35,17 @@ const ratioList = ref([
   {
     ratio: [1, 1],
     id: 1,
-    baseSize: 1280,
+    baseSize: 1500,
   },
   {
     ratio: [9, 16],
     id: 2,
-    baseSize: 1152,
+    baseSize: 1920,
   },
   {
     ratio: [3, 4],
     id: 3,
-    baseSize: 1200,
+    baseSize: 1920,
   },
 
 ])
@@ -56,7 +56,7 @@ const handleRateChange = () => {
 
   emits("update:value", { width, height })
 }
-const rateSize = ref(50)
+const rateSize = ref(20)
 const handleClick = (item) => {
   // console.log(item, selectedItem.value.baseSize, Math.min(...selectedItem.value.ratio), rateSize.value, selectedItem.value.ratio[0])
   selectedItem.value = item

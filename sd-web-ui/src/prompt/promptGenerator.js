@@ -1,4 +1,4 @@
-import propmt from "./prompt"
+import chilloutmix from "./chilloutmixPrompt"
 const getRandomPrompt = (dict, count) => {
   const list = []
   const res = []
@@ -15,13 +15,45 @@ const getRandomPrompt = (dict, count) => {
   }
   return res
 }
-export const generatePromopt = () => {
+export const generatePromopt = (model = "chilloutmix") => {
+  let promptDict = chilloutmix
   let res = []
-  console.log(propmt)
-  for (const key in propmt) {
-    const { count, value } = propmt[key]
+  for (const key in promptDict) {
+    const { count, value } = promptDict[key]
     const items = getRandomPrompt(value, count)
     res = [...res, ...items]
   }
   return res.join(",")
+}
+export const preProcessText2ImageParams = (payload) => {
+  const { model, params } = payload
+  let { width, height } = params
+  let upscaleBy = 1;
+  let upscaler = "Latent"
+  let hiresFix = false;
+  const maxPixSide = Math.max(width, height)
+  const maxOriginSize = 768
+  if (maxPixSide > maxOriginSize && maxPixSide < maxOriginSize * 2) {
+    upscaleBy = 2
+    hiresFix = true
+  } else if (maxPixSide > maxOriginSize * 2 && maxPixSide < maxOriginSize * 3) {
+    upscaleBy = 3
+    hiresFix = true
+  } else if (maxPixSide > maxOriginSize * 3 && maxPixSide < maxOriginSize * 4) {
+    upscaleBy = 4
+    hiresFix = true
+  }
+  width = parseInt(width / upscaleBy)
+  height = parseInt(height / upscaleBy)
+  return {
+    model,
+    params: {
+      ...params,
+      width,
+      height,
+      upscaleBy,
+      hiresFix,
+      upscaler
+    }
+  }
 }

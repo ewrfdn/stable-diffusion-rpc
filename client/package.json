@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/index.js --prod",
+    "local": "node ./src/auto.js --prod",
     "dev": "node ./src/auto.js --dev"
   },
   "devDependencies": {

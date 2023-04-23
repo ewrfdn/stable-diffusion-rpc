@@ -7,7 +7,7 @@ if [ -z $tag ]; then
 fi
 
 echo "build docker image with tag: sd/ui:$tag"
-
+yarn build
 mkdir build
 
 docker build --no-cache -t sd/ui:$tag .
