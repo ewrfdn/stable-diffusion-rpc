@@ -26,7 +26,7 @@ export const generatePromopt = (model = "chilloutmix") => {
   return res.join(",")
 }
 export const preProcessText2ImageParams = (payload) => {
-  const { model, params } = payload
+  const { checkPoint, params } = payload
   let { width, height } = params
   let upscaleBy = 1;
   let upscaler = "Latent"
@@ -46,7 +46,7 @@ export const preProcessText2ImageParams = (payload) => {
   width = parseInt(width / upscaleBy)
   height = parseInt(height / upscaleBy)
   return {
-    model,
+    checkPoint,
     params: {
       ...params,
       width,

@@ -192,7 +192,7 @@ class StableDiffusionRunTask extends BaseTask {
 
   async text2Image(host, port, config = {}) {
     const data = {
-      fn_index: 85,
+      fn_index: 120,
       data: [
         `task(${this.id})`, // taskId
         config.prompt, // 正tag
@@ -268,12 +268,13 @@ class StableDiffusionRunTask extends BaseTask {
 
   async loadCheckPoint(host, port, checkpointName) {
     const data = {
-      fn_index: 229,
+      fn_index: 263,
       data: [
         checkpointName,
       ],
     };
     const response = await this.runPredict(host, port, data);
+    console.log(response, data);
     return response.data[0].choices;
   }
 

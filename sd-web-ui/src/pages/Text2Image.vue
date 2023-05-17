@@ -4,6 +4,15 @@
       <div class="params">
         <ParamsCard>
           <template v-slot:header><span>
+              <span>模型</span>
+            </span>
+          </template>
+          <template v-slot:content>
+            <ModelOptions :checkpoints="checkpoints" v-model:value="params.checkPoint"></ModelOptions>
+          </template>
+        </ParamsCard>
+        <ParamsCard>
+          <template v-slot:header><span>
               <span>描述</span> <a-button size="small" @click="randomPrompt" class="random-button">随机生成</a-button>
             </span>
           </template>
@@ -62,13 +71,15 @@
 </template>
 
 <script setup>
-import { reactive, ref, toRaw } from 'vue';
+import { reactive, ref, toRaw, watch } from 'vue';
 import ParamsCard from '../components/ParamsCard.vue';
 import stableDiffusionService from "../api/stableDiffusion"
 import ImageView from '../components/ImageView.vue';
 import ratioView from '../components/ratioView.vue';
+import ModelOptions from '../components/ModelOptions.vue';
 import { message } from 'ant-design-vue';
 import { generatePromopt, preProcessText2ImageParams } from "../prompt/promptGenerator"
+import { getDefaultPrompt } from "../prompt/defaultPrompt"
 const params = reactive({
   checkPoint: "chilloutmix",
   params: {
@@ -95,6 +106,31 @@ const randomPrompt = () => {
   const prompt = generatePromopt()
   params.params.prompt = prompt
 }
+watch(() => params.checkPoint, (newVal) => {
+  const prompt = getDefaultPrompt(newVal)
+  params.params.negativePrompt = prompt.negativePrompt
+  params.params.prompt = prompt.prompt
+})
+
+const checkpoints = ref([
+  {
+    modelName: "真人",
+    model: "chilloutmix"
+  },
+  {
+    modelName: "风景",
+    model: "cheeseDaddys_35"
+  },
+  {
+    modelName: "超现实",
+    model: "breakdomainrealistic"
+  },
+  {
+    modelName: "动漫",
+    model: "CounterfeitV25_25"
+  },
+
+])
 const samplingMethodOption = ref([
 
   {
@@ -183,6 +219,7 @@ const generate = async () => {
   images.value = []
   try {
     const data = { ...toRaw(params) }
+    console.log(data)
     data.params = { ...toRaw(data.params), ...toRaw(size.value) }
     const worker = await stableDiffusionService.getAllWorker()
     if (!worker || worker.list.length === 0) {

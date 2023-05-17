@@ -90,7 +90,7 @@ class Socket {
       data,
     };
     const dataString = JSON.stringify(sendData);
-    console.log('sendMessage', dataString);
+    // console.log('sendMessage', dataString);
     try {
       const b64Str = Buffer.from(dataString);
       console.log('len', b64Str.length);
